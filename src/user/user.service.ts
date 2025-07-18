@@ -14,9 +14,7 @@ export class UserService {
   }
 
   async loginUser(username: string, enteredPassword: string) {
-    const user = await this.prisma.users.findUnique({
-      where: { username },
-    });
+    const user = await this.findUser(username);
 
     if (!user) {
       throw new Error('User not found');
@@ -36,7 +34,19 @@ export class UserService {
     return userWithoutPassword;
   }
 
-  async findAll() {
-    return this.prisma.users.findMany();
+  async findUser(username: string) {
+    try {
+      const user = await this.prisma.users.findUnique({
+        where: { username: username },
+      });
+
+      if (!user) {
+        throw Error('user not found');
+      }
+
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
