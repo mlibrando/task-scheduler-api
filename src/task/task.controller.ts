@@ -11,15 +11,15 @@ import { AddTaskDto } from './dto/create-task.dto';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-@Controller('api/task')
+@Controller('api/tasks')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get()
-  async getTasks(@CurrentUser() user: { userId: number }) {
+  @Get('/due')
+  async getTasksDueToday(@CurrentUser() user: { userId: number }) {
     try {
-      return await this.taskService.getTasks(user.userId);
+      return await this.taskService.getTasksDueToday(user.userId);
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -32,7 +32,7 @@ export class TaskController {
     @Body() addTaskDto: AddTaskDto,
   ) {
     try {
-      return await this.taskService.addTask(user.userId, addTaskDto);
+      return this.taskService.addTaskFromPrompt(user.userId, addTaskDto.prompt);
     } catch (error) {
       throw new BadRequestException(error);
     }
