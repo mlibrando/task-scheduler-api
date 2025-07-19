@@ -31,16 +31,12 @@ export class TaskService {
   }
 
   async getTasksDueToday(userId: number) {
-    const today = new Date();
+    const now = new Date();
     const startOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
     );
     const endOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() + 1,
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
     );
 
     const tasksDueToday = await this.prisma.tasks.findMany({
