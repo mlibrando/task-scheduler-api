@@ -34,11 +34,6 @@ export class GroqService {
     const blockMatch = extractJson(message);
     const fallbackMatch = extractJsonFromFallbackResponse(message);
 
-    console.log({
-      blockMatch,
-      fallbackMatch,
-    });
-
     const jsonString = blockMatch?.[1] || fallbackMatch?.[0];
 
     if (!jsonString) {
