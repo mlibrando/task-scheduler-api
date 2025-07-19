@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { comparePassword, hashPassword } from 'src/utils/bcrypt';
+import { hashPassword } from 'src/utils/bcrypt';
 
 @Injectable()
 export class UserService {
@@ -13,40 +13,15 @@ export class UserService {
     });
   }
 
-  async loginUser(username: string, enteredPassword: string) {
-    const user = await this.findUser(username);
+  async findUser(username: string) {
+    const user = await this.prisma.users.findUnique({
+      where: { username },
+    });
 
     if (!user) {
-      throw new Error('User not found');
+      return null;
     }
 
-    const isPasswordValid = await comparePassword(
-      enteredPassword,
-      user.password,
-    );
-
-    if (!isPasswordValid) {
-      throw new Error('Invalid password');
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
-
-  async findUser(username: string) {
-    try {
-      const user = await this.prisma.users.findUnique({
-        where: { username: username },
-      });
-
-      if (!user) {
-        throw Error('user not found');
-      }
-
-      return user;
-    } catch (error) {
-      console.log(error);
-    }
+    return user;
   }
 }
