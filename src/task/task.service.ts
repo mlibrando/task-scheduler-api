@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GroqService } from '../groq/groq.service';
 import { EditTaskDto } from './dto/edit-task.dto';
@@ -81,7 +81,7 @@ export class TaskService {
     });
 
     if (!foundTask) {
-      throw new BadRequestException('Task does not exist');
+      throw new Error('Task does not exist');
     }
 
     const editTask = await this.prisma.tasks.update({
@@ -106,7 +106,7 @@ export class TaskService {
     });
 
     if (!foundTask) {
-      throw new BadRequestException('Task does not exist');
+      throw new Error('Task does not exist');
     }
 
     await this.prisma.tasks.delete({
@@ -116,5 +116,57 @@ export class TaskService {
     });
 
     return { success: true, message: 'Task successfully deleted' };
+  }
+
+  async markAsCompleted(taskId: number) {
+    const task = await this.prisma.tasks.findUnique({
+      where: { task_id: taskId },
+    });
+
+    if (!task) {
+      throw new Error('Task not found');
+    }
+
+    if (task.is_completed) {
+      return { success: false, message: 'Task is already completed' };
+    }
+
+    const updated = await this.prisma.tasks.update({
+      where: { task_id: taskId },
+      data: {
+        is_completed: true,
+        completed_at: new Date().toISOString(),
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Task marked as completed',
+      task: updated,
+    };
+  }
+
+  async markAsUncompleted(taskId: number) {
+    const task = await this.prisma.tasks.findFirst({
+      where: { task_id: taskId },
+    });
+
+    if (!task || !task.is_completed) {
+      throw new Error('Task not found or not completed');
+    }
+
+    const updated = await this.prisma.tasks.update({
+      where: { task_id: taskId },
+      data: {
+        is_completed: false,
+        completed_at: null,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Task marked as uncompleted',
+      task: updated,
+    };
   }
 }
