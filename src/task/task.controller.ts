@@ -34,7 +34,9 @@ export class TaskController {
         cursor ? Number(cursor) : undefined,
       );
     } catch (error) {
-      throw new BadRequestException(error);
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
     }
   }
 
@@ -44,7 +46,9 @@ export class TaskController {
     try {
       return await this.taskService.getTasksDueToday(user.userId);
     } catch (error) {
-      throw new BadRequestException(error);
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
     }
   }
 
@@ -55,9 +59,14 @@ export class TaskController {
     @Body() addTaskDto: AddTaskDto,
   ) {
     try {
-      return this.taskService.addTaskFromPrompt(user.userId, addTaskDto.prompt);
+      return await this.taskService.addTaskFromPrompt(
+        user.userId,
+        addTaskDto.prompt,
+      );
     } catch (error) {
-      throw new BadRequestException(error);
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
     }
   }
 
@@ -68,9 +77,11 @@ export class TaskController {
     @Body() editTaskDto: EditTaskDto,
   ) {
     try {
-      return this.taskService.editTask(Number(taskId), editTaskDto);
+      return await this.taskService.editTask(Number(taskId), editTaskDto);
     } catch (error) {
-      throw new BadRequestException(error);
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
     }
   }
 
@@ -78,9 +89,35 @@ export class TaskController {
   @Delete('/delete/:id')
   async deleteTask(@Param('id') taskId: string) {
     try {
-      return this.taskService.deleteTask(Number(taskId));
+      return await this.taskService.deleteTask(Number(taskId));
     } catch (error) {
-      throw new BadRequestException(error);
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/mark-complete/:id')
+  async markAsCompleted(@Param('id') taskId: string) {
+    try {
+      return await this.taskService.markAsCompleted(Number(taskId));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/mark-uncomplete/:id')
+  async markAsUncomplete(@Param('id') taskId: string) {
+    try {
+      return await this.taskService.markAsUncompleted(Number(taskId));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
     }
   }
 }

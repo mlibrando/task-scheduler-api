@@ -10,7 +10,9 @@ export class UserController {
     try {
       return await this.userService.registerUser(body.user_name, body.password);
     } catch (error) {
-      throw new BadRequestException(error);
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
     }
   }
 }
